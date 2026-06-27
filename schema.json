@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wifi-telemetry-schema",
+  "title": "wifi-telemetry-event",
+  "description": "One Wi-Fi/TCP telemetry reading, emitted per device per sample interval.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["device_id", "device_mac", "timestamp_utc", "freq_band", "channel_num", "buffer_event"],
+  "properties": {
+    "device_id": {
+      "type": "string",
+      "description": "Stable device identifier from device metadata. Used as the Kafka message KEY (keys the stream by device -> per-device ordering, avoids hot partitions)."
+    },
+    "device_mac": {
+      "type": "string",
+      "pattern": "^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$",
+      "description": "Device MAC address, colon-separated hex."
+    },
+    "timestamp_utc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Event time in UTC, ISO-8601. Drives Postgres table partitioning (by day) and SQL time-window aggregations."
+    },
+    "freq_band": {
+      "type": "string",
+      "enum": ["2.4GHz", "5GHz", "6GHz"],
+      "description": "Wi-Fi frequency band the device is associated on."
+    },
+    "channel_num": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 233,
+      "description": "Wi-Fi channel number the device is associated on."
+    },
+    "rtt_ms": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "description": "Round-trip time / link latency in milliseconds. Null on a dropped sample."
+    },
+    "link_budget_db": {
+      "type": ["number", "null"],
+      "description": "Link budget in dB at sample time (may be negative). Null on a dropped sample."
+    },
+    "avg_link_utilization_pct": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Average link utilization as a percentage, 0-100. Null on a dropped sample."
+    },
+    "cwnd_bytes": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "TCP congestion window size in bytes. Null on a dropped sample."
+    },
+    "rwnd_bytes": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "TCP receive window size in bytes. Null on a dropped sample."
+    },
+    "buffer_event": {
+      "type": "boolean",
+      "description": "Label: true if a buffering/stall event occurred this interval. ML prediction target."
+    }
+  },
+  "examples": [
+    {
+      "device_id": "ut-000123",
+      "device_mac": "a4:cf:12:9b:7e:01",
+      "timestamp_utc": "2026-06-27T18:30:00Z",
+      "freq_band": "5GHz",
+      "channel_num": 149,
+      "rtt_ms": 42.5,
+      "link_budget_db": 11.3,
+      "avg_link_utilization_pct": 63,
+      "cwnd_bytes": 174760,
+      "rwnd_bytes": 262144,
+      "buffer_event": false
+    }
+  ]
+}

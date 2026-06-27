@@ -1,39 +1,34 @@
-"""Step 2 — cross-network consumer (Mac -> Kafka on Pi-node1).
-
-Subscribes to the topic and prints every message. Leave it running, then run
-`producer.py` in another terminal. Ctrl-C to stop.
-"""
+from confluent_kafka import Consumer
+from datetime import datetime, UTC
 import json
 
-from confluent_kafka import Consumer
+print("starting Kafka Consumer")
 
-from config import KAFKA_BROKER, TOPIC
+consumer_config = {
+    'bootstrap.servers': '100.82.145.53:9092',
+    'group.id': 'telemetry.consumers',
+    'auto.offset.reset': 'earliest'
+}
 
+consumer = Consumer(consumer_config)
+consumer.subscribe(['wifi.telemetry.data'])
 
-def main():
-    consumer = Consumer({
-        "bootstrap.servers": KAFKA_BROKER,
-        "group.id": "telemetry-readers",      # consumers in the same group split partitions
-        "auto.offset.reset": "earliest",      # on first run, read from the start of the topic
-    })
-    consumer.subscribe([TOPIC])
-    print(f"listening on '{TOPIC}' via {KAFKA_BROKER} ... Ctrl-C to stop")
+print("listening for messages...")
 
-    try:
-        while True:
-            msg = consumer.poll(1.0)  # wait up to 1s for a record
-            if msg is None:
-                continue
-            if msg.error():
-                print(f"consumer error: {msg.error()}")
-                continue
-            event = json.loads(msg.value().decode("utf-8"))
-            print(f"got: {event}  [partition {msg.partition()} offset {msg.offset()}]")
-    except KeyboardInterrupt:
-        print("\nstopping...")
-    finally:
-        consumer.close()  # commit final offsets and leave the group cleanly
+try:
+    while True:
+        msg = consumer.poll(0.1)
+        if msg is None:
+            continue
+        if msg.error():
+            continue
 
+        key = msg.key().decode('utf-8') if msg.key() else None
+        value = msg.value().decode('utf-8')
 
-if __name__ == "__main__":
-    main()
+        print(f"Partition: {msg.partition()} | Topic: {msg.topic()} | Key: {key} | Value: {value}")
+
+except Exception as e:
+    print(f"Exception raised: {e}")
+finally:
+    consumer.close()

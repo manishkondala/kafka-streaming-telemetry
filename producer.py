@@ -1,42 +1,40 @@
-"""Step 2 — cross-network producer (Mac -> Kafka on Pi-node1).
-
-Sends 10 simple JSON messages so we can prove the network connection works
-BEFORE we add the real telemetry schema. Run `consumer.py` in another terminal
-to watch them arrive.
-"""
 import json
-import time
-
+from datetime import datetime, UTC
+import device
 from confluent_kafka import Producer
 
-from config import KAFKA_BROKER, TOPIC
-
+pi_ips = {'100.64.128.15', '100.87.172.17'}
+pi_ips = {'100.82.145.53'} # -> pi-node1
 
 def delivery_report(err, msg):
-    """Called once per message after the broker acks (or fails) it."""
     if err is not None:
-        print(f"FAILED: {err}")
+        print(f"Message delivery failed: {err}")
     else:
-        print(f"delivered -> {msg.topic()} [partition {msg.partition()}] offset {msg.offset()}")
+        print(f"Message delivered to {msg.topic()} [{msg.partition()}] at offset {msg.offset()}")
 
+kafka_topic_name = "wifi.telemetry.data"
 
-def main():
-    producer = Producer({"bootstrap.servers": KAFKA_BROKER})
-    print(f"producing to '{TOPIC}' via {KAFKA_BROKER}")
+print("Starting Kafka Producer...")
 
-    for i in range(10):
-        event = {"seq": i, "msg": f"hello from the mac #{i}"}
-        producer.produce(
-            TOPIC,
-            value=json.dumps(event).encode("utf-8"),
-            callback=delivery_report,
-        )
-        producer.poll(0)  # serve delivery callbacks without blocking
-        time.sleep(0.5)
+producer_config = {
+    'bootstrap.servers' : '100.82.145.53:9092',
+}
 
-    producer.flush()  # block until every queued message is delivered or fails
-    print("done.")
+print("connecting to Kafka Topic...")
 
+producer = Producer(producer_config)
 
-if __name__ == "__main__":
-    main()
+try:
+    for ip in pi_ips:
+        data = device.get_device_data(ip)
+        print("------------")
+        print(data)
+        print("------------")
+        producer.produce(topic=kafka_topic_name, key=data["device_id"].encode('utf-8'), value=json.dumps(data).encode('utf-8'), on_delivery=delivery_report)
+        producer.flush()
+
+except Exception as e:
+    print(f"Exception occured: {e}")
+
+finally:
+    print("Kafka producer stopped)")
