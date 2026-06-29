@@ -24,7 +24,7 @@ class Device:
         self.channel_num = channel_num
 
     def generate_reading(self):
-        # --- dynamic per-reading metrics (realistic-ish ranges; tune to taste) ---
+        # --- dynamic per-reading metrics (realistic-ish ranges; ---
         rtt_ms = round(random.uniform(20, 300), 1)
         link_budget_db = round(random.uniform(2.0, 15.0), 1)
         avg_link_utilization_pct = round(random.uniform(10, 100), 1)

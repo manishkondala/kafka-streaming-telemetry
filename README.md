@@ -1,4 +1,4 @@
-# Starlink Telemetry Pipeline
+# Wi-Fi Telemetry Pipeline
 
 A streaming Wi-Fi/TCP telemetry analytics pipeline, built as a clean-room
 re-creation of a production system: synthetic 802.11 + TCP telemetry →
@@ -42,8 +42,8 @@ publish port 9092 on the host, and allow 9092 through the Pi's firewall.
 ## Status
 
 - [x] Kafka broker up on Pi-node1, manual CLI produce/consume verified
-- [ ] Cross-network Python producer/consumer (this step)
-- [ ] Synthetic 802.11 + TCP telemetry schema
+- [x] Cross-network Python producer/consumer
+- [x] Synthetic 802.11 + TCP telemetry schema
 - [ ] Consumer: validate -> dead-letter -> Postgres
 - [ ] SQL window-function transforms
 - [ ] Buffering-prediction model

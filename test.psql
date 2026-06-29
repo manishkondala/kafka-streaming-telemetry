@@ -1,0 +1,14 @@
+CREATE TABLE wifi_telemetry_streaming_data (
+    id BIGSERIAL Primary KEY,
+    device_id VARCHAR(100) NOT NULL,
+    device_mac VARCHAR(17) NOT NULL,
+    timestamp_utc TIMESTAMP WITH TIME ZONE,
+    freq_band TEXT NOT NULL,
+    channel_num INTEGER NOT NULL,
+    rtt_ms REAL NOT NULL,
+    link_budget_db REAL NOT NULL,
+    avg_link_utilization_pct REAL NOT NULL,
+    cwnd_bytes INTEGER NOT NULL,
+    rwnd_bytes INTEGER NOT NULL,
+    buffer_event BOOLEAN
+)
