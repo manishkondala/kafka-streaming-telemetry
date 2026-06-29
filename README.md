@@ -44,6 +44,6 @@ publish port 9092 on the host, and allow 9092 through the Pi's firewall.
 - [x] Kafka broker up on Pi-node1, manual CLI produce/consume verified
 - [x] Cross-network Python producer/consumer
 - [x] Synthetic 802.11 + TCP telemetry schema
-- [ ] Consumer: validate -> dead-letter -> Postgres
+- [x] Consumer: validate -> dead-letter -> Postgres
 - [ ] SQL window-function transforms
 - [ ] Buffering-prediction model
